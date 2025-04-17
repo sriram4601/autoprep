@@ -6,12 +6,13 @@ import { cookies } from 'next/headers'; // Import cookies for authentication
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'; // Import Supabase client creator
 import { hasExceededApiLimit, incrementApiUsage } from './apiLimits'; // Import API limit utilities
 import { SubscriptionPlan } from './subscriptionUtils'; // Import subscription plan types
+import { Database } from '@/types/supabase'; // Import Database type for Supabase - Using @ alias to import from project root
 
 // Type for the API handler function
 type ApiHandler = (
   req: NextRequest, 
   userId: string, 
-  supabase: ReturnType<typeof createRouteHandlerClient>
+  supabase: ReturnType<typeof createRouteHandlerClient<Database>>
 ) => Promise<NextResponse>;
 
 /**
@@ -27,7 +28,7 @@ export function withApiLimits(handler: ApiHandler) {
       const cookieStore = cookies();
       
       // Create a Supabase client with the cookie store
-      const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+      const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore });
       
       // Get the current session
       const { data: { session } } = await supabase.auth.getSession();
