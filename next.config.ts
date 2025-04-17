@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['ui-avatars.com'],
   },
+  allowedDevOrigins: ['localhost', '127.0.0.1', '192.168.1.3'],
 };
 
 export default nextConfig;

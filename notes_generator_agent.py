@@ -1,8 +1,8 @@
-import os
-import google.generativeai as genai
-from typing import List, Dict, Any, Optional
-from llama_index.core.llms import ChatMessage, MessageRole
-from llama_index.llms.gemini import Gemini
+import os  # Import the operating system module for environment variables and file operations
+import google.generativeai as genai  # Import Google's Generative AI library for direct API access
+from typing import List, Dict, Any, Optional  # Import type hints for better code documentation and IDE support
+from llama_index.core.llms import ChatMessage, MessageRole  # Import classes for structured chat messages and role definitions
+from llama_index.llms.gemini import Gemini  # Import the Gemini model wrapper from LlamaIndex
 
 class NotesGeneratorAgent:
     """
@@ -18,23 +18,22 @@ class NotesGeneratorAgent:
             api_key (str): Google API key for accessing the Gemini model
             model_name (str): Name of the Gemini model to use
         """
-        # Configure the Gemini API
+        # Configure the Gemini API with the provided API key
         genai.configure(api_key=api_key)
         
-        # Initialize the Gemini model
+        # Initialize the Gemini model with specific parameters for note generation
         self.llm = Gemini(
-            model_name=model_name,
-            api_key=api_key,
+            model_name=model_name,  # Specify which Gemini model to use
+            api_key=api_key,  # Pass the API key for authentication
             temperature=0.3,  # Lower temperature for more focused and structured content
-            top_p=0.9,
+            top_p=0.9,  # Control diversity while maintaining coherence
             max_tokens=4096,  # Allow for longer responses for comprehensive notes
         )
         
-        # Initialize conversation history
+        # Initialize an empty list to store the conversation history
         self.conversation_history = []
-        self.current_subject = None
         
-        # Define the system prompt for the notes generator
+        # Define the system prompt that guides the AI to generate well-structured notes
         self.system_prompt = """
         You are an AI assistant that generates high-quality, structured notes for NEET exam aspirants in India. 
         Your notes should be concise, well-organized, and aligned with the NEET syllabus and NCERT books of classes 11 and 12.
@@ -71,7 +70,7 @@ class NotesGeneratorAgent:
         Format your response using markdown for better readability.
         """
         
-        # Add the system prompt to the conversation history
+        # Add the system prompt to the conversation history as a system message
         self.conversation_history.append(
             ChatMessage(role=MessageRole.SYSTEM, content=self.system_prompt)
         )
@@ -86,48 +85,27 @@ class NotesGeneratorAgent:
         Returns:
             str: The generated notes or clarification question
         """
-        # Add the user message to the conversation history
+        # Add the user message to the conversation history with the USER role
         self.conversation_history.append(
             ChatMessage(role=MessageRole.USER, content=message)
         )
         
-        # Generate a response using the Gemini model
+        # Generate a response using the Gemini model based on the full conversation history
         response = self.llm.chat(self.conversation_history)
         
-        # Add the assistant's response to the conversation history
+        # Add the assistant's response to the conversation history with the ASSISTANT role
         self.conversation_history.append(
             ChatMessage(role=MessageRole.ASSISTANT, content=response.message.content)
         )
         
+        # Return the text content of the response
         return response.message.content
 
-    def generate_notes(self, topic: str, subject: Optional[str] = None) -> str:
-        """
-        Generate structured notes for a specific NEET topic.
-        
-        Args:
-            topic (str): The specific topic to generate notes for
-            subject (Optional[str]): The subject area (Physics, Chemistry, Biology)
-            
-        Returns:
-            str: The generated notes
-        """
-        # Store the current subject
-        self.current_subject = subject
-        
-        # Construct a prompt for generating notes
-        prompt = f"Generate comprehensive notes for NEET aspirants on the topic: {topic}"
-        if subject:
-            prompt += f" in {subject}"
-        
-        # Use the chat method to generate notes
-        return self.chat(prompt)
-
-    def reset_conversation(self) -> None:
+    def reset(self) -> None:
         """
         Reset the conversation history, keeping only the system prompt.
         """
+        # Reset the conversation history to only contain the system prompt
         self.conversation_history = [
             ChatMessage(role=MessageRole.SYSTEM, content=self.system_prompt)
         ]
-        self.current_subject = None

@@ -38,12 +38,14 @@
   background-color: #DCF8C6;
   margin-left: auto;
   border-top-right-radius: 0;
+  color: black;
 }
 
 .botMessage {
   background-color: white;
   margin-right: auto;
   border-top-left-radius: 0;
+  color: black;
 }
 
 .messageTime {
@@ -67,6 +69,13 @@
   border-radius: 20px;
   margin-right: 10px;
   outline: none;
+  color: black; /* Ensure typed text is visible (dark grey) */
+}
+
+/* Explicitly style the placeholder for testing */
+.inputField::placeholder {
+  color: grey; /* Make it very visible */
+  opacity: 1; /* Ensure it's not transparent */
 }
 
 .sendButton {

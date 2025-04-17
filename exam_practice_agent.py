@@ -1,10 +1,10 @@
 import os
 from typing import List, Dict, Any, Optional
-from llama_index.core import VectorStoreIndex, Document
 from llama_index.core.settings import Settings
 from llama_index.llms.gemini import Gemini
 from llama_index.core.memory import ChatMemoryBuffer
-from llama_index.core.chat_engine.types import ChatMode
+from llama_index.core.llms import ChatMessage, MessageRole
+from llama_index.core.chat_engine import SimpleChatEngine
 
 class ExamPracticeAgent:
     """
@@ -25,9 +25,6 @@ class ExamPracticeAgent:
         
         # Create LLM
         self.llm = Gemini(model_name=model_name, temperature=0.7)
-        
-        # Set up settings
-        Settings.llm = self.llm
         
         # Create memory buffer for conversation history
         self.memory = ChatMemoryBuffer.from_defaults(token_limit=4096)
@@ -69,35 +66,8 @@ class ExamPracticeAgent:
            - Highlight patterns in mistakes and offer targeted advice.
            - Summarize performance statistics when requested.
 
-        4. **Adaptive Learning:**
-           - Focus more on topics where the user shows weakness.
-           - Revisit concepts that were previously challenging.
-           - Gradually introduce new topics while reinforcing existing knowledge.
-           - Adjust the pace based on user comfort and proficiency.
-
-        5. **Motivational Support:**
-           - Maintain an encouraging tone throughout interactions.
-           - Acknowledge improvements and milestones.
-           - Provide constructive feedback without being discouraging.
-           - Offer study tips and time management strategies.
-           - Remind users of their progress and growth.
-
-        6. **Question Format:**
-           - For Quantitative Aptitude: Include questions on arithmetic, algebra, geometry, etc.
-           - For Verbal Ability: Include reading comprehension, grammar, vocabulary, etc.
-           - For Data Interpretation: Include charts, graphs, tables with analytical questions.
-           - For Logical Reasoning: Include puzzles, sequences, arrangements, etc.
-           - Always provide clear instructions and necessary information.
-
-        7. **Response Structure:**
-           - When generating a question:
-             * Clearly state the question number and topic
-             * Present the question with all necessary details
-             * Provide options for multiple-choice questions
-             * Include the correct answer and detailed explanation
-             * Indicate the difficulty level (Easy, Medium, Hard)
-           - When evaluating an answer:
-             * Confirm whether the answer is correct or incorrect
+        4. **Response Quality:**
+           - When providing feedback:
              * Explain why the answer is correct/incorrect
              * Provide the correct solution method
              * Offer tips for similar questions in the future
@@ -110,18 +80,15 @@ class ExamPracticeAgent:
         Remember to maintain a professional, supportive tone and focus on helping the user improve their CAT exam preparation.
         """
         
-        # Create an empty index for now
-        self.index = VectorStoreIndex.from_documents(
-            [Document(text="Initial document")], 
-            settings=Settings
-        )
-        
         # Create the chat engine
-        self.chat_engine = self.index.as_chat_engine(
-            chat_mode=ChatMode.CONDENSE_QUESTION,
-            memory=self.memory,
-            system_prompt=self.system_prompt,
-            verbose=True
+        self.chat_engine = self._create_chat_engine()
+    
+    def _create_chat_engine(self):
+        """Create a simple chat engine using the LLM and memory"""
+        return SimpleChatEngine(
+            llm=self.llm,
+            prefix_messages=[ChatMessage(role=MessageRole.SYSTEM, content=self.system_prompt)],
+            memory=self.memory
         )
     
     def generate_question(self, subject: str, topic: str, difficulty: int = None) -> str:
@@ -288,11 +255,12 @@ class ExamPracticeAgent:
         }
         self.current_difficulty = 1
     
-    def reset_conversation(self) -> None:
+    def reset(self) -> None:
         """
         Reset the conversation history.
         """
         self.memory.reset()
+        self.chat_engine = self._create_chat_engine()
 
 
 # Example usage
@@ -304,16 +272,16 @@ if __name__ == "__main__":
     agent = ExamPracticeAgent(api_key)
     
     # Generate a practice question
-    question = agent.generate_question("Quantitative Aptitude", "Algebra", 1)
-    print(f"Question:\n{question}\n")
+    question = agent.generate_question("Quantitative Aptitude", "Percentages", difficulty=1)
+    print(f"Question: {question}")
     
     # Simulate user answer
-    user_answer = "Option B"
+    user_answer = "75%"
     
     # Evaluate the answer
-    feedback = agent.evaluate_answer(question, user_answer, "Algebra", 45.0)
-    print(f"Feedback:\n{feedback}\n")
+    feedback = agent.evaluate_answer(question, user_answer, "Percentages", response_time=30)
+    print(f"Feedback: {feedback}")
     
     # Get performance analysis
     analysis = agent.get_performance_analysis()
-    print(f"Performance Analysis:\n{analysis}")
+    print(f"Analysis: {analysis}")

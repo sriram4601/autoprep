@@ -143,33 +143,21 @@ export default function NotesChat() {
   };
 
   return (
-    <div className={styles.chatContainer}>
-      {/* Chat Header */}
-      <div className={styles.chatHeader}>
-        <div className={styles.avatarContainer}>
-          <Image
-            src="https://ui-avatars.com/api/?name=Notes+Generator&background=128C7E&color=fff"
-            alt="Notes Generator"
-            width={40}
-            height={40}
-            className={styles.avatar}
-          />
-          <span>Notes Generator</span>
-        </div>
-        <button 
-          onClick={resetConversation}
-          className={styles.resetButton}
-          title="Reset Conversation"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
-            <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
-          </svg>
-        </button>
-      </div>
-      
-      {/* Chat Body */}
-      <div className={styles.chatBody}>
+    <div className={styles.chatContainer} style={{
+      maxWidth: 'none', // Remove max-width constraint to fill available space
+      margin: '0', // Remove margin to use full available space
+      height: '100%', // Use full height
+      display: 'flex', // Use flexbox for layout
+      flexDirection: 'column', // Stack children vertically
+      borderRadius: '0', // Remove border radius since it's now part of the dashboard
+      boxShadow: 'none' // Remove box shadow since it's contained in the dashboard
+    }}>
+      {/* Chat Body - Header removed since dashboard already has one */}
+      <div className={styles.chatBody} style={{ 
+        height: 'calc(100vh - 180px)', // Adjust height to fill available space minus header and footer
+        maxHeight: 'none', // Remove any max height restriction to use full available space
+        overflowY: 'auto' // Enable vertical scrolling for content that exceeds the height
+      }}>
         {messages.map((message) => (
           <div
             key={message.id}

@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     // Send the reset request to the Flask backend server
-    const response = await fetch('http://localhost:5000/student/reset', {
+    const response = await fetch('http://localhost:5000/api/student/reset', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

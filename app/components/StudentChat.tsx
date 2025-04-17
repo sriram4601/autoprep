@@ -66,7 +66,7 @@ export default function StudentChat() {
     
     // Create a new message from what the user typed
     // Like preparing a new postcard with what you've written
-    const newMessage: Message = {
+   const newMessage: Message = {
       id: Date.now().toString(), // Generate a unique ID based on current time - like numbering your postcard
       text: input, // The message text - like what you wrote on the postcard
       sender: 'user', // This message is from the user - like marking the postcard as "from me"
@@ -176,34 +176,21 @@ export default function StudentChat() {
   // This is the visual layout of our chat interface
   // Like the blueprint for how our chat room looks
   return (
-    <div className={styles.chatContainer}>
-      {/* The top bar of our chat - like the header of a letter */}
-      <div className={styles.chatHeader}>
-        <div className={styles.avatarContainer}>
-          <Image
-            src="https://ui-avatars.com/api/?name=Student+AI&background=128C7E&color=fff" // The profile picture URL - like choosing a photo for the contact
-            alt="Student AI" // Description of the image - like writing on the back of a photo
-            width={40} // Width of the image - like the photo's width
-            height={40} // Height of the image - like the photo's height
-            className={styles.avatar} // Apply avatar styling - like choosing a nice frame for the photo
-          />
-          <span>Student AI</span> {/* The name displayed - like the name tag on a door */}
-        </div>
-        <button 
-          onClick={resetConversation} // What happens when clicked - like connecting a button to a function
-          className={styles.resetButton} // Apply button styling - like choosing how the button looks
-          title="Reset Conversation" // Tooltip text - like a hint that appears when hovering
-        >
-          {/* This is an SVG icon - like a small picture made of lines and shapes */}
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/> {/* Part of the reset icon - like one piece of a small drawing */}
-            <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/> {/* Another part of the reset icon - like another piece of the drawing */}
-          </svg>
-        </button>
-      </div>
-      
-      {/* The main chat area - like the bulletin board where all postcards are pinned */}
-      <div className={styles.chatBody}>
+    <div className={styles.chatContainer} style={{
+      maxWidth: 'none', // Remove max-width constraint to fill available space
+      margin: '0', // Remove margin to use full available space
+      height: '100%', // Use full height
+      display: 'flex', // Use flexbox for layout
+      flexDirection: 'column', // Stack children vertically
+      borderRadius: '0', // Remove border radius since it's now part of the dashboard
+      boxShadow: 'none' // Remove box shadow since it's contained in the dashboard
+    }}>
+      {/* The main chat area - header removed since dashboard already has one */}
+      <div className={styles.chatBody} style={{ 
+        height: 'calc(100vh - 180px)', // Adjust height to fill available space minus header and footer
+        maxHeight: 'none', // Remove any max height restriction
+        overflowY: 'auto' // Enable vertical scrolling
+      }}>
         {/* For each message, create a message bubble - like creating a visual card for each message */}
         {messages.map((message) => (
           <div
@@ -237,7 +224,10 @@ export default function StudentChat() {
         <input
           type="text" // Input type - like specifying "this is for text, not numbers"
           value={input} // Current text - like what's currently written on the notepad
-          onChange={(e) => setInput(e.target.value)} // Update when typing - like recording each letter as it's written
+          onChange={(e) => {
+            console.log('Input changed:', e.target.value); // DEBUG: Log input changes
+            setInput(e.target.value);
+          }} // Update when typing - like recording each letter as it's written
           onKeyPress={handleKeyPress} // Check for Enter key - like watching for the shortcut key
           placeholder="Type a message..." // Hint text - like faint guide text on the notepad
           className={styles.inputField} // Apply styling - like choosing a nice notepad design
