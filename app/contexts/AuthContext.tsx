@@ -28,9 +28,9 @@ type AuthContextType = {
   // Loading state indicator
   isLoading: boolean;
   // Signup method signature
-  signUp: (email: string, password: string, metadata?: any) => Promise<any>;
-  // Sign in method signature
-  signIn: (email: string, password: string) => Promise<any>;
+  signUp: (email: string, password: string, metadata?: any, captchaToken?: string) => Promise<any>;
+  // Sign in method signature - ensure captchaToken is included as an optional parameter
+  signIn: (email: string, password: string, captchaToken?: string) => Promise<any>;
   // Sign out method signature
   signOut: () => Promise<void>;
   // Reset password method signature
@@ -104,34 +104,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign up a new user
   // Function to sign up a new user
-  const signUp = async (email: string, password: string, metadata?: any) => {
+  const signUp = async (email: string, password: string, metadata?: any, captchaToken?: string) => {
     // Set loading state to true during signup process
     setIsLoading(true);
     // Begin try block to handle any errors
     try {
-      // Use Supabase to sign up the user
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: metadata || {},
-        }
+      // Call the API route for signup instead of direct Supabase authentication
+      // This ensures proper handling of captcha verification and backend integration
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, metadata, captchaToken }),
+        credentials: 'include', // Important for cookies to be included
       });
       
-      // If there was an error during signup
-      if (error) {
-        throw error;
+      // Parse the response data
+      const data = await response.json();
+      
+      // If the response is not ok, throw an error
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to sign up');
       }
       
-      // Return the response data on success
-      return { success: true, user: data.user, session: data.session };
+      // If signup was successful and we have user data, update the state
+      if (data.success && data.user) {
+        // We don't set the user here as they need to confirm their email first
+        console.log('Signup successful, please check your email for confirmation');
+      }
+      
+      // Return the response data
+      return data;
     } 
     // Catch any errors during the signup process
     catch (error) {
       // Log the error to the console
       console.error('Error signing up:', error);
-      // Return error information
-      return { success: false, error };
+      // Convert error to string to prevent "Objects are not valid as React child" error
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      // Return error information as a string
+      return { success: false, error: errorMessage };
     } 
     // Execute regardless of success or failure
     finally {
@@ -142,7 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign in an existing user
   // Function to sign in an existing user
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, captchaToken?: string) => {
     // Set loading state to true during sign in process
     setIsLoading(true);
     // Begin try block to handle any errors
@@ -154,7 +167,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        // Explicitly include captchaToken in the request body to ensure TypeScript recognizes it as a parameter
+        body: JSON.stringify({ email, password, captchaToken }),
         credentials: 'include', // Important for cookies to be included
       });
       
@@ -180,8 +194,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     catch (error) {
       // Log the error to the console
       console.error('Error signing in:', error);
-      // Return error information
-      return { success: false, error };
+      // Convert error to string to prevent "Objects are not valid as React child" error
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      // Return error information as a string
+      return { success: false, error: errorMessage };
     } 
     // Execute regardless of success or failure
     finally {
