@@ -4,36 +4,31 @@ import { SubscriptionPlan} from '@/app/utils/subscriptionUtils'; // Import subsc
 
 export async function POST(request: Request) { // Define a POST handler function for the signup endpoint
   try { // Begin try block to handle any errors that might occur during the signup process
-    const { email, password, metadata } = await request.json(); // Extract email, password, and metadata from the request body
+    const { email, password, metadata, captchaToken } = await request.json(); // Extract email, password, metadata, and captchaToken from the request body
     
     // Get the API URL from environment variables or use default
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'; // Set API URL from environment variables or use localhost:5000 as fallback
     
     try { // Begin nested try block to handle fetch-specific errors
-      // Call the Python backend API for signup
-      const response = await fetch(`${apiUrl}/api/auth/signup`, { // Make a POST request to the Python backend signup endpoint
-        method: 'POST', // Set the HTTP method to POST
-        headers: { // Set the request headers
-          'Content-Type': 'application/json', // Specify that we're sending JSON data
-        },
-        body: JSON.stringify({ email, password, metadata }), // Convert the user data to JSON string and send it in the request body
+      // First try to sign up directly with Supabase to handle the captcha verification
+      const { data: supabaseData, error: supabaseError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata || {}, // Include user metadata if provided
+          captchaToken // Pass the captchaToken to Supabase for verification
+        }
       });
       
-      const data = await response.json(); // Parse the JSON response from the backend
-      
-      if (!response.ok) { // Check if the response status is not in the 200-299 range (not successful)
-        return NextResponse.json({ error: data.error || 'Failed to sign up' }, { status: response.status }); // Return error response with the backend error message or a default message
-      }
-      
-      // If signup was successful, create a default subscription record for the user
-      if (data.user && data.user.id) {
+      // If Supabase signup was successful, create a subscription and return the data
+      if (supabaseData?.user && !supabaseError) {
         // Create a subscription record with the free plan
         try {
           // Insert a new subscription record for the user with the free plan
           const { error: subscriptionError } = await supabase
             .from('subscriptions')
             .insert({
-              user_id: data.user.id,
+              user_id: supabaseData.user.id,
               plan: SubscriptionPlan.FREE, // Set to free plan by default
               subscription_start_date: new Date().toISOString(),
               created_at: new Date().toISOString(),
@@ -42,15 +37,70 @@ export async function POST(request: Request) { // Define a POST handler function
             
           if (subscriptionError) {
             // Log error but continue since user was created successfully
-            console.error('Failed to create subscription record for user:', data.user.id, subscriptionError);
+            console.error('Failed to create subscription record for user:', supabaseData.user.id, subscriptionError);
           }
         } catch (subscriptionError) {
           // Log error but continue since user was created successfully
           console.error('Error creating subscription record:', subscriptionError);
         }
+        
+        return NextResponse.json({
+          success: true,
+          user: supabaseData.user,
+          session: supabaseData.session
+        });
       }
       
-      return NextResponse.json(data); // Return the successful response data to the client
+      // If Supabase signup failed and we're not in Vercel, try with our Python backend
+      if (process.env.VERCEL !== '1') {
+        // Call the Python backend API for signup
+        const response = await fetch(`${apiUrl}/api/auth/signup`, { // Make a POST request to the Python backend signup endpoint
+          method: 'POST', // Set the HTTP method to POST
+          headers: { // Set the request headers
+            'Content-Type': 'application/json', // Specify that we're sending JSON data
+          },
+          body: JSON.stringify({ email, password, metadata, captchaToken }), // Include captchaToken in the request body
+        });
+        
+        const data = await response.json(); // Parse the JSON response from the backend
+        
+        if (!response.ok) { // Check if the response status is not in the 200-299 range (not successful)
+          return NextResponse.json({ error: data.error || 'Failed to sign up' }, { status: response.status }); // Return error response with the backend error message or a default message
+        }
+        
+        // If signup was successful, create a default subscription record for the user
+        if (data.user && data.user.id) {
+          // Create a subscription record with the free plan
+          try {
+            // Insert a new subscription record for the user with the free plan
+            const { error: subscriptionError } = await supabase
+              .from('subscriptions')
+              .insert({
+                user_id: data.user.id,
+                plan: SubscriptionPlan.FREE, // Set to free plan by default
+                subscription_start_date: new Date().toISOString(),
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+              
+            if (subscriptionError) {
+              // Log error but continue since user was created successfully
+              console.error('Failed to create subscription record for user:', data.user.id, subscriptionError);
+            }
+          } catch (subscriptionError) {
+            // Log error but continue since user was created successfully
+            console.error('Error creating subscription record:', subscriptionError);
+          }
+        }
+        
+        return NextResponse.json(data); // Return the successful response data to the client
+      } else {
+        // In Vercel environment, return the Supabase error
+        return NextResponse.json({ 
+          error: supabaseError?.message || 'Failed to sign up', 
+          details: supabaseError?.code || 'unknown_error'
+        }, { status: 400 });
+      }
     } catch (fetchError) { // Catch any errors that occur during the fetch operation
       console.error('Error connecting to backend server:', fetchError); // Log the fetch error to the console
       return NextResponse.json({ // Return a detailed error response
