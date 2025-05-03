@@ -1,0 +1,19 @@
+# Flask and related packages for web server functionality
+flask==2.2.3
+# Flask-CORS for handling cross-origin requests from the frontend
+flask-cors==3.0.10
+# Python-dotenv for loading environment variables from .env file
+python-dotenv==1.0.0
+# Supabase client for database operations
+supabase==1.0.3
+# Date and time handling
+pytz==2023.3
+# LlamaIndex for AI agents
+llama-index-core>=0.10.0
+llama-index-llms-openai>=0.1.0
+# OpenAI for AI functionality
+openai>=1.0.0
+# Requests for HTTP requests
+requests>=2.31.0
+# Gunicorn for production web server
+gunicorn==21.2.0

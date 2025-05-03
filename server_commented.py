@@ -22,8 +22,24 @@ load_dotenv()  # Load environment variables from .env file
 # --- Setting up the Main Office (Flask App) ---
 # This creates the central hub or 'main office' for our application.
 app = Flask(__name__) # '__name__' just gives the office a standard internal name.
+
+# --- Updated CORS Configuration for Security ---
+# Define allowed origins based on environment
+# This restricts which domains can make requests to your API
+allowed_origins = [
+    os.environ.get('FRONTEND_URL', 'https://autoprep.vercel.app'),  # Production frontend URL - replace with your actual Vercel URL
+    'http://localhost:3000',  # Local development frontend URL
+    'https://localhost:3000'  # Local development with HTTPS
+]
+
 # Enable CORS for all routes with support for credentials
-CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})  # Updated to support credentials for cookie-based auth
+# This configuration allows requests only from specified origins instead of '*' (any origin)
+# supports_credentials=True enables cookies and authentication headers
+CORS(app, 
+     supports_credentials=True, 
+     resources={r"/*": {"origins": allowed_origins}},
+     allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])  # Updated to support credentials for cookie-based auth
 
 # Frontend URL for redirects
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
@@ -1064,12 +1080,21 @@ def get_conversations_endpoint():
 # This part only runs if you start *this* specific Python file directly.
 # It's like the main 'On' switch for the entire office (the web server).
 if __name__ == '__main__':
-    # Figure out which communication channel (port) to use. Default is 5000.
-    # Think of it as choosing a specific phone line number for the office.
-    port = int(os.environ.get('PORT', 5000))
-
-    # Turn on the main switchboard (start the Flask server).
+    # Get port from environment variable or use 8080 (GCP App Engine's preferred port)
+    # App Engine sets the PORT environment variable for us
+    port = int(os.environ.get('PORT', 8080))  # Changed default from 5000 to 8080 for Google Cloud
+    
+    # Determine if we're in development or production mode
+    # In production, debug should be False for security
+    environment = os.environ.get('ENVIRONMENT', 'development')
+    debug_mode = environment != 'production'
+    
+    # Log the startup configuration
+    print(f"Starting server in {environment} mode on port {port}")
+    print(f"Debug mode: {debug_mode}")
+    print(f"Allowed origins for CORS: {allowed_origins}")
+    
+    # Start the Flask server
     # host='0.0.0.0' means it can receive calls from any computer on the network.
-    # port=port uses the chosen phone line number.
-    # debug=True is like having a troubleshooter mode active, useful during development.
-    app.run(host='0.0.0.0', port=port, debug=True)
+    # debug=debug_mode ensures debug mode is off in production for security
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)  # Updated for production security
