@@ -13,6 +13,8 @@ pytz==2023.3
 # LlamaIndex for AI agents
 llama-index-core>=0.10.0
 llama-index-llms-openai>=0.1.0
+# Added Gemini integration for LlamaIndex
+llama-index-llms-gemini>=0.1.0
 # OpenAI for AI functionality
 openai>=1.0.0
 # Requests for HTTP requests
