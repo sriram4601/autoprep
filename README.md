@@ -29,18 +29,23 @@ Built using **LlamaIndex agents**, AutoPrep leverages structured reasoning and r
 
 ---
 
-autoprep/
-│── app/
-│ ├── api/ # Backend API routes
-│ ├── components/ # Reusable UI components
-│ ├── contexts/ # State management
-│ ├── dashboard/ # User dashboard
-│ ├── login/ # Login flow
-│ ├── signup/ # Signup flow
-│ ├── pricing/ # Pricing page
-│ ├── utils/ # Helper functions
-│ ├── layout.tsx # App layout
-│ └── page.tsx # Main entry page
+## 🏗️ Project Structure
+
+- **app/**
+  - **api/** – Backend API routes
+  - **auth-test/** – Authentication testing
+  - **auth/callback/** – OAuth callback handling
+  - **components/** – Reusable UI components
+  - **contexts/** – Global state management
+  - **dashboard/** – User dashboard
+  - **forgot-password/** – Password recovery flow
+  - **login/** – Login page
+  - **signup/** – Signup page
+  - **pricing/** – Pricing page
+  - **utils/** – Utility/helper functions
+  - **layout.tsx** – Root layout
+  - **page.tsx** – Main entry point
+  - **globals.css** – Global styles
 
 
 ---
