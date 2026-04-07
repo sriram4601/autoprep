@@ -60,19 +60,6 @@ Built using **LlamaIndex agents**, AutoPrep leverages structured reasoning and r
 
 ---
 
-
----
-
-## ⚙️ Tech Stack
-
-- **Frontend**: React + TypeScript (Next.js)
-- **Backend**: API routes (Next.js / Node)
-- **AI Framework**: LlamaIndex (Agent-based architecture)
-- **Styling**: CSS
-- **Authentication**: Custom auth flows
-
----
-
 ## 🧠 How It Works
 
 1. User interacts via chat interface
