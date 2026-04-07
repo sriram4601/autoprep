@@ -18,7 +18,7 @@ Built using **LlamaIndex agents**, AutoPrep leverages structured reasoning and r
 
 ---
 
-## ✨ Features
+##  Features
 
 -  AI-powered doubt solving (chat-based interface)
 -  Dynamic test generation based on topics
@@ -29,7 +29,7 @@ Built using **LlamaIndex agents**, AutoPrep leverages structured reasoning and r
 
 ---
 
-## 🏗️ Project Structure
+##  Project Structure
 
 - **app/**
   - **api/** – Backend API routes
@@ -50,7 +50,7 @@ Built using **LlamaIndex agents**, AutoPrep leverages structured reasoning and r
 
 ---
 
-## ⚙️ Tech Stack
+##  Tech Stack
 
 - **Frontend**: React + TypeScript (Next.js)
 - **Backend**: API routes (Next.js / Node)
@@ -60,7 +60,7 @@ Built using **LlamaIndex agents**, AutoPrep leverages structured reasoning and r
 
 ---
 
-## 🧠 How It Works
+##  How It Works
 
 1. User interacts via chat interface
 2. Query is processed by LlamaIndex agent
